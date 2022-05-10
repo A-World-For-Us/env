@@ -10,7 +10,7 @@ The package can be installed by adding `env` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:env, "~> 0.1.0"}
+    {:env, git: "https://github.com/A-World-For-Us/env", tag: "v0.1.0"},
   ]
 end
 ```
