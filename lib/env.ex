@@ -11,7 +11,7 @@ defmodule Env do
 
   # will raise on prod start if env var is not defined
   def load_but_prod_mandatory(var_name, default \\ nil) do
-    if Application.get_env(:digiforma, :env) in [:dokku, :prod] do
+    if Application.get_env(:digiforma, :env) == :prod do
       load!(var_name)
     else
       load(var_name, default)
@@ -73,7 +73,8 @@ defmodule Env do
   end
 
   def load_into_boolean!(var_name) do
-    load!(var_name)
+    var_name
+    |> load!()
     |> load_boolean_from_string(var_name)
   end
 
