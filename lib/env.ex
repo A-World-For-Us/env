@@ -20,14 +20,14 @@ defmodule Env do
 
   def load!(var_name) do
     IO.puts("MUST USE ENV #{var_name}")
-    System.fetch_env!(var_name)
+    fetch_env!(var_name)
   end
 
   def load(var_name, default \\ nil), do: get_env(var_name, default)
 
   def load_into_integer!(var_name) do
     var_name
-    |> System.fetch_env!()
+    |> fetch_env!()
     |> parse_strict_integer!(var_name)
   end
 
@@ -44,7 +44,7 @@ defmodule Env do
 
   def load_into_atom!(var_name) do
     var_name
-    |> System.fetch_env!()
+    |> fetch_env!()
     |> String.to_atom()
   end
 
@@ -73,7 +73,8 @@ defmodule Env do
   end
 
   def load_into_boolean!(var_name) do
-    load!(var_name)
+    var_name
+    |> load!()
     |> load_boolean_from_string(var_name)
   end
 
@@ -81,13 +82,35 @@ defmodule Env do
   # using a whitelist of env var allowed, this will not use local env var while running in test env
   # can't use guard, because env is compile before everything (even configuration itself)
   defp get_env(var_name, default) do
-    cond do
-      Application.get_env(:digiforma, :env) != :test || var_name in Application.get_env(:digiforma, :whitelist_test_env_vars) ->
-        var_name
-        |> System.get_env(default)
-
-      true ->
+    if Application.get_env(:digiforma, :env) != :test || var_name in Application.get_env(:digiforma, :whitelist_test_env_vars) do
+      var_name
+      |> System.get_env()
+      |> set_default_if_empty(default)
+    else
         default
+    end
+  end
+
+  defp set_default_if_empty(nil, default), do: default
+  defp set_default_if_empty(var_content, default) do
+    case String.trim(var_content) do
+      "" -> default
+      nonempty_content -> nonempty_content
+    end
+  end
+
+  defp fetch_env!(var_name) do
+    var_name
+    |> System.fetch_env!()
+    |> trim!(var_name)
+  end
+
+  defp trim!(var_content, var_name) do
+    var_content
+    |> String.trim()
+    |> case do
+      "" -> raise("#{var_name} value is empty")
+       nonempty_content -> nonempty_content
     end
   end
 
