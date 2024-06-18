@@ -78,6 +78,18 @@ defmodule Env do
     |> load_boolean_from_string(var_name)
   end
 
+  def load_into_ip(var_name, default \\ nil) do
+    var_name
+    |> load(default)
+    |> load_ip_from_string(var_name)
+  end
+
+  def load_into_ip!(var_name) do
+    var_name
+    |> load!()
+    |> load_ip_from_string(var_name)
+  end
+
   defp get_env(var_name, default \\ nil)
   # using a whitelist of env var allowed, this will not use local env var while running in test env
   # can't use guard, because env is compile before everything (even configuration itself)
@@ -114,6 +126,20 @@ defmodule Env do
     end
   end
 
+  defp load_ip_from_string(nil, _var_name) do
+    nil
+  end
+
+  defp load_ip_from_string(str, var_name) do
+    str
+    |> String.to_charlist()
+    |> :inet.parse_address()
+    |> case do
+      {:error, _reason} -> raise error_message_ip(var_name, str)
+      {:ok, ip} -> ip
+    end
+  end
+
   defp load_boolean_from_string(str, var_name) do
     str
     |> String.downcase()
@@ -145,7 +171,11 @@ defmodule Env do
     "#{var_name} value is not a parsable integer: #{var_content}"
   end
 
-  defp error_message_atom(var_content, var_name) do
+  defp error_message_atom(var_name, var_content) do
     "#{var_name} value is not a parsable atom: #{var_content}"
+  end
+
+  defp error_message_ip(var_name, var_content) do
+    "#{var_name} value is not a parsable ip: #{var_content}"
   end
 end
