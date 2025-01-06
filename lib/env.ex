@@ -3,6 +3,8 @@ defmodule Env do
     Helper to fetch and parse env var values to configure digiforma
   """
 
+  require Logger
+
   @bool_true_values ~w(true 1 enable enabled yes)
   @bool_false_values ~w(false 0 disable disabled no)
 
@@ -19,7 +21,7 @@ defmodule Env do
   end
 
   def load!(var_name) do
-    IO.puts("MUST USE ENV #{var_name}")
+    Logger.debug("MUST USE ENV #{var_name}")
     fetch_env!(var_name)
   end
 
